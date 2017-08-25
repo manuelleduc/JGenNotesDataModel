@@ -1,0 +1,50 @@
+grammar eu.jgen.notes.dm.DataModel with org.eclipse.xtext.xbase.annotations.XbaseWithAnnotations
+
+
+generate dataModel "http://www.jgen.eu/notes/dm/DataModel"
+
+DataModel:
+	annotations+=XAnnotation?
+	importSection=XImportSection?	
+	element=SubjectArea;
+
+SubjectArea:
+	'subject' 'area' name=ID '{'
+	elements+=SubjectAreaFeature*
+	'}';
+
+SubjectAreaFeature:
+	SubjectArea | Entity | Workset;
+
+Workset:
+	'workset' name=ID '{'
+	elements+=Attribute*
+	'}';
+
+Attribute:
+	annotations+=XAnnotation?
+	'attribute' name=ID ':'
+	type=JvmTypeReference
+	';'?
+	;
+
+Entity:
+	'entity' name=ID '{'
+	elements+=EntityFeature*
+	'}';
+
+EntityFeature: 
+	Attribute | Relationship | Identifier; 
+
+Relationship:
+	'relationship' name=ID type=('1:1' | '1:M' | '0:1' | '0:M')
+	target=[Entity]	
+	'invert' relname=[Relationship |QualifiedName]	
+	';'?;
+
+IdComponent: 
+	{IdComponent} feature = (Attribute | Relationship) ; 
+	
+Identifier:
+	'id' name=ID '(' features+=[EntityFeature] (',' features+=[EntityFeature])* ')'';'?;
+
